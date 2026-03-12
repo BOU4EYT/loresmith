@@ -1,16 +1,22 @@
 import { createServerClient } from "@supabase/ssr";
-import { cookies }            from "next/headers";
- 
-export function createClient() {
-  const jar = cookies();
+import { cookies } from "next/headers";
+
+export async function createClient() {
+  const jar = await cookies();
+
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get:    name => jar.get(name)?.value,
-        set:    (name, value, opts) => jar.set({ name, value, ...opts }),
-        remove: (name, opts)  => jar.set({ name, value: "", ...opts }),
+        getAll() {
+          return jar.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            jar.set(name, value, options);
+          });
+        },
       },
     }
   );
