@@ -25,6 +25,7 @@ export interface GameDetail extends Omit<GameSummary, 'tags'> {
   steam_url:    string | null
   steam_positive: number | null
   steam_negative: number | null
+  tags:         string[]        // ← add this line
   mechanics: Array<{ slug: string; label: string; confidence: number }>
   wiki: {
     content:      string
