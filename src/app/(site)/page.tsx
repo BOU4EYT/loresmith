@@ -41,7 +41,7 @@ export default async function DiscoverPage({
 
     lib?.forEach((l) => {
       ownedIds.add(l.game_id);
-      const g = l.games as { title: string; slug: string } | null;
+      const g = l.games as unknown as { title: string; slug: string } | null;
       if (g) libraryGames.push({ title: g.title, slug: g.slug, playtime_mins: l.playtime_mins });
     });
   }
