@@ -54,7 +54,7 @@ export function GameCardStd({ game }: { game: GameSummary }) {
             {game.steam_pct !== null ? `★ ${Math.round(game.steam_pct)}%` : ""}
           </div>
           <div className="ctags">
-            {game.tags.slice(0, 2).map((t) => (
+            {(game.tags ?? []).slice(0, 2).map((t) => (
               <span key={t} className="ctag">{t}</span>
             ))}
           </div>
