@@ -9,7 +9,7 @@ export default async function DiscoverPage({
 }: {
   searchParams: { q?: string; mechanic?: string };
 }) {
-  const sb = createClient();
+  const sb = await createClient();
   const { data: { user } } = await sb.auth.getUser();
 
   // ── Game results ───────────────────────────────────────────────────────
