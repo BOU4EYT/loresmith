@@ -29,4 +29,3 @@ export async function POST() {
  
   return NextResponse.json({ synced: rows.length });
 }
-← PREV
