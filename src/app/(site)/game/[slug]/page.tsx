@@ -1,13 +1,18 @@
 import { createClient } from "@/lib/supabase/server";
-import { notFound }    from "next/navigation";
+import { notFound } from "next/navigation";
  
-export default async function GamePage({ params }: { params: { slug: string } }) {
-  const sb = createClient();
+export default async function GamePage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const resolvedParams = await params;
+  const sb = await createClient();
   const { data: { user } } = await sb.auth.getUser();
  
   const { data: game } = await sb.from("games")
     .select(`*, game_mechanics(confidence, mechanics(slug, label))`)
-    .eq("slug", params.slug).single();
+    .eq("slug", resolvedParams.slug).single();
  
   if (!game) notFound();
  

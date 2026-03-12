@@ -5,20 +5,21 @@ import { MechanicSidebar }     from "@/components/MechanicSidebar";
 export default async function DiscoverPage({
   searchParams,
 }: {
-  searchParams: { q?: string; mechanic?: string };
+  searchParams: Promise<{ q?: string; mechanic?: string }>;
 }) {
-  const sb = createClient();
+  const resolvedSearchParams = await searchParams;
+  const sb = await createClient();
   const { data: { user } } = await sb.auth.getUser();
  
   // Run the right query based on whether user is searching or browsing
   let games;
-  if (searchParams.q) {
+  if (resolvedSearchParams.q) {
     const { data } = await sb.rpc("search_games",
-      { query: searchParams.q, lim: 24 });
+      { query: resolvedSearchParams.q, lim: 24 });
     games = data ?? [];
   } else {
     const { data } = await sb.rpc("discover_games", {
-      mechanic_slugs: searchParams.mechanic ? [searchParams.mechanic] : null,
+      mechanic_slugs: resolvedSearchParams.mechanic ? [resolvedSearchParams.mechanic] : null,
       exclude_owned:  user?.id ?? null,
       lim: 24,
     });
@@ -39,7 +40,7 @@ export default async function DiscoverPage({
  
   return (
     <div className="flex">
-      <MechanicSidebar mechanics={mechanics ?? []} active={searchParams.mechanic} />
+      <MechanicSidebar mechanics={mechanics ?? []} active={resolvedSearchParams.mechanic} />
       <main className="flex-1 p-6">
         <GameGrid games={games} ownedIds={ownedIds} />
       </main>
