@@ -3,7 +3,7 @@ import { createClient }  from "@/lib/supabase/server";
 import { getSteamLibrary } from "@/lib/steam/api";
  
 export async function POST() {
-  const sb = createClient();
+  const sb = await createClient();
   const { data: { user } } = await sb.auth.getUser();
   if (!user) return NextResponse.json({ error: "Not logged in" }, { status: 401 });
  
@@ -29,3 +29,4 @@ export async function POST() {
  
   return NextResponse.json({ synced: rows.length });
 }
+
