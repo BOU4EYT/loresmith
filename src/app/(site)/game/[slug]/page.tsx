@@ -81,9 +81,10 @@ export default async function GamePage({ params }: { params: { slug: string } })
     })),
     wiki:   wiki  ?? null,
     videos: videos ?? null,
-    tags:   (game.game_mechanics ?? [])
+    tags: (game.game_mechanics ?? [])
       .slice(0, 3)
-      .map((gm: { mechanics: { label: string } }) => gm.mechanics.label),
+      .map((gm: { mechanics: { label: string } }) => gm.mechanics?.label)
+      .filter(Boolean) as string[],
   };
 
   return <GamePageUI game={detail} />;
