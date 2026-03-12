@@ -4,7 +4,7 @@ import { GamePageUI }    from "@/components/GamePageUI";
 import type { GameDetail } from "@/lib/types";
 
 export default async function GamePage({ params }: { params: { slug: string } }) {
-  const sb = createClient();
+  const sb = await createClient();
   const { data: { user } } = await sb.auth.getUser();
 
   // Core game data + mechanics
