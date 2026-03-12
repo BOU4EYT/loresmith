@@ -5,7 +5,7 @@ import { getSteamProfile, getSteamLibrary } from "@/lib/steam/api";
  
 export async function GET(req: NextRequest) {
   const params   = new URL(req.url).searchParams;
-  const supabase = createClient();
+  const supabase = await createClient();
  
   // 1. Verify with Steam
   const steamId = await verifySteamCallback(params);
