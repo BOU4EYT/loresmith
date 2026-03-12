@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 export const createClient = async () => {
+export async function createClient() {
   const jar = await cookies();
 
   return createServerClient(
@@ -23,3 +24,4 @@ export const createClient = async () => {
 };
 
 export default createClient;
+}
