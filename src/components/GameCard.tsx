@@ -55,7 +55,7 @@ export function GameCardStd({ game }: { game: GameSummary }) {
           </div>
           <div className="ctags">
             {(game.tags ?? []).slice(0, 2).map((t) => (
-              <span key={t} className="ctag">{t}</span>
+               <span key={t} className="ctag">{t}</span>
             ))}
           </div>
         </div>
@@ -95,8 +95,8 @@ export function GameCardCompact({ game, rank }: { game: GameSummary; rank: numbe
 
       <div className="ccr">
         <div className="ctags">
-          {game.tags.slice(0, 1).map((t) => (
-            <span key={t} className="ctag">{t}</span>
+          {(game.tags ?? []).slice(0, 1).map((t) => (
+             <span key={t} className="ctag">{t}</span>
           ))}
         </div>
         {game.steam_pct !== null && (
