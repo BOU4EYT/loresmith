@@ -2,30 +2,64 @@ import { createClient }      from "@/lib/supabase/server";
 import { GameGrid }          from "@/components/GameGrid";
 import { MechanicSidebar }   from "@/components/MechanicSidebar";
 import { HeroSearch }        from "@/components/HeroSearch";
+import { SortSelect }        from "@/components/SortSelect";
 import type { GameSummary }  from "@/lib/types";
+
+// Maps mood keys → mechanic slugs for filtering
+const MOOD_MECHANIC_MAP: Record<string, string[]> = {
+  cosy:    ["simulation", "crafting", "farming"],
+  tension: ["combat", "horror", "survival"],
+  story:   ["narrative", "rpg", "adventure"],
+  onemore: ["roguelite", "roguelike", "arcade"],
+  thinker: ["puzzle", "strategy", "turn-based"],
+};
 
 export default async function DiscoverPage({
   searchParams,
 }: {
-  searchParams: { q?: string; mechanic?: string };
+  searchParams: Promise<{ q?: string; mechanic?: string; mood?: string; sort?: string }>;
 }) {
+  const params = await searchParams;
   const sb = await createClient();
   const { data: { user } } = await sb.auth.getUser();
 
-  // ── Game results ───────────────────────────────────────────────────────
+  // Resolve mood → mechanic slugs
+  const moodMechanics = params.mood ? (MOOD_MECHANIC_MAP[params.mood] ?? []) : [];
+  const mechanicSlugs = [
+    ...(params.mechanic ? [params.mechanic] : []),
+    ...moodMechanics,
+  ];
+
+  // ── Game results ──────────────────────────────────────────────────────
   let games: GameSummary[] = [];
 
-  if (searchParams.q) {
-    const { data } = await sb.rpc("search_games", { query: searchParams.q, lim: 24 });
+  if (params.q) {
+    const { data } = await sb.rpc("search_games", { query: params.q, lim: 48 });
     games = (data as GameSummary[]) ?? [];
   } else {
     const { data } = await sb.rpc("discover_games", {
-      mechanic_slugs: searchParams.mechanic ? [searchParams.mechanic] : null,
+      mechanic_slugs: mechanicSlugs.length > 0 ? mechanicSlugs : null,
       exclude_owned:  user?.id ?? null,
-      lim: 24,
+      lim: 48,
     });
     games = (data as GameSummary[]) ?? [];
   }
+
+  // ── Client-side sort (after fetch) ────────────────────────────────────
+  if (params.sort === "score") {
+    games = [...games].sort((a, b) => {
+      const pa = a.steam_pct ?? 0;
+      const pb = b.steam_pct ?? 0;
+      return pb - pa;
+    });
+  } else if (params.sort === "price_asc") {
+    games = [...games].sort((a, b) => {
+      if (a.is_free) return -1;
+      if (b.is_free) return 1;
+      return (a.price_usd ?? 999) - (b.price_usd ?? 999);
+    });
+  }
+  // "relevance" = natural RPC order
 
   // ── Owned game IDs + library list ─────────────────────────────────────
   const ownedIds = new Set<number>();
@@ -53,6 +87,12 @@ export default async function DiscoverPage({
     .is("parent_id", null)
     .order("label");
 
+  const heading = params.q
+    ? `Results for "${params.q}"`
+    : params.mood || params.mechanic
+    ? "Filtered Results"
+    : "Recommended For You";
+
   return (
     <>
       <HeroSearch librarySize={ownedIds.size} />
@@ -60,23 +100,20 @@ export default async function DiscoverPage({
       <div className="lay">
         <MechanicSidebar
           mechanics={mechanics ?? []}
-          active={searchParams.mechanic}
+          activeMechanic={params.mechanic}
+          activeMood={params.mood}
           libraryGames={libraryGames}
         />
 
         <div className="con">
           <div className="sechd">
             <div className="sect">
-              {searchParams.q ? `Results for "${searchParams.q}"` : "Recommended For You"}
+              {heading}
               <span style={{ fontFamily: "var(--mono)", fontSize: 9, color: "var(--t3)" }}>
                 {games.length} results
               </span>
             </div>
-            <select className="fsel">
-              <option>SORT: RELEVANCE</option>
-              <option>SORT: SCORE</option>
-              <option>SORT: RELEASE</option>
-            </select>
+            <SortSelect current={params.sort} />
           </div>
 
           <GameGrid games={games} ownedIds={ownedIds} />

@@ -51,7 +51,7 @@ export function GameCardStd({ game }: { game: GameSummary }) {
         )}
         <div className="cmeta">
           <div className="cscore">
-            {game.steam_pct !== null ? `★ ${Math.round(game.steam_pct)}%` : ""}
+            {game.steam_pct !== null && !isNaN(game.steam_pct) ? `★ ${Math.round(game.steam_pct)}%` : ""}
           </div>
           <div className="ctags">
             {(game.tags ?? []).slice(0, 2).map((t) => (
@@ -64,10 +64,14 @@ export function GameCardStd({ game }: { game: GameSummary }) {
       {/* Actions */}
       <div className="cacts">
         <Link href={`/game/${game.slug}`} className="cbt">Wiki</Link>
-        {game.owned
-          ? <button className="cbt a">↗ Steam</button>
-          : <button className="cbt a">↗ {price}</button>
-        }
+        <a
+          href={`https://store.steampowered.com/app/${game.id}`}
+          target="_blank"
+          rel="noopener"
+          className="cbt a"
+        >
+          {game.owned ? "↗ Steam" : `↗ ${price}`}
+        </a>
       </div>
     </div>
   );
@@ -99,13 +103,18 @@ export function GameCardCompact({ game, rank }: { game: GameSummary; rank: numbe
              <span key={t} className="ctag">{t}</span>
           ))}
         </div>
-        {game.steam_pct !== null && (
+        {game.steam_pct !== null && !isNaN(game.steam_pct) && (
           <span className="ccscore">★{Math.round(game.steam_pct)}%</span>
         )}
         <Link href={`/game/${game.slug}`} className="ccbt">Wiki</Link>
-        <button className="ccbt a">
+        <a
+          href={`https://store.steampowered.com/app/${game.id}`}
+          target="_blank"
+          rel="noopener"
+          className="ccbt a"
+        >
           {game.owned ? "↗ Steam" : price}
-        </button>
+        </a>
       </div>
     </div>
   );

@@ -29,24 +29,39 @@ interface LoreState {
   setBooted:  ()            => void;
 }
 
+const SESSION_KEY = "ls_booted";
+
+function getSessionBooted(): boolean {
+  if (typeof window === "undefined") return false;
+  try { return sessionStorage.getItem(SESSION_KEY) === "1"; }
+  catch { return false; }
+}
+
+function setSessionBooted() {
+  if (typeof window === "undefined") return;
+  try { sessionStorage.setItem(SESSION_KEY, "1"); } catch {}
+}
+
 export const useStore = create<LoreState>()(
   persist(
     (set) => ({
       theme:      "CYAN",
       density:    "standard",
-      booted:     false,
+      booted:     getSessionBooted(),
       setTheme:   (theme)   => {
         set({ theme });
-        // Sync to html[data-theme] immediately — no flash on hot reload
         if (typeof document !== "undefined")
           document.documentElement.dataset.theme = theme;
       },
       setDensity: (density) => set({ density }),
-      setBooted:  ()        => set({ booted: true }),
+      setBooted:  () => {
+        setSessionBooted();
+        set({ booted: true });
+      },
     }),
     {
-      name:    "ls-prefs",
-      // Only persist theme and density — boot should replay each session
+      name: "ls-prefs",
+      // Only persist theme and density
       partialize: (s) => ({ theme: s.theme, density: s.density }),
     }
   )

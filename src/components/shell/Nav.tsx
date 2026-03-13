@@ -90,14 +90,14 @@ export function Nav({ steamLinked, steamUsername }: NavProps) {
           ))}
         </div>
 
-        {/* Profile */}
+        {/* Profile / Sign in */}
         {steamLinked ? (
-          <button className="btn" style={{ fontSize: 10, padding: "5px 14px" }}>
-            PROFILE
-          </button>
+          <span className="btn" style={{ fontSize: 10, padding: "5px 14px", opacity: 0.7 }}>
+            {steamUsername ?? "PROFILE"}
+          </span>
         ) : (
           <a
-            href={`/auth/steam/callback?return_to=${encodeURIComponent(typeof window !== "undefined" ? window.location.href : "/")}`}
+            href="/auth/steam/login"
             className="btn"
             style={{ fontSize: 10, padding: "5px 14px" }}
           >

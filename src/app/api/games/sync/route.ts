@@ -4,13 +4,17 @@ import { syncGameDetails, syncReviews, syncSteamSpyTags } from "@/lib/steam/sync
 // Edit this list as you grow — start small
 const SEED_GAMES = [
   1145360,  // Hades
-  814380,   // Sekiro
+  814380,   // Sekiro: Shadows Die Twice
   1623730,  // Vampire Survivors
   2379780,  // Balatro
   1091500,  // Cyberpunk 2077
-  291550,   // Baba Is You
-  1222690,  // Outer Wilds
-  814380,   // Sekiro
+  736260,   // Baba Is You  (291550 is Brawlhalla)
+  753640,   // Outer Wilds
+  367520,   // Hollow Knight
+  1086940,  // Baldur's Gate 3
+  413150,   // Stardew Valley
+  632470,   // Disco Elysium
+  504230,   // Celeste
 ];
  
 export async function POST(req: NextRequest) {
