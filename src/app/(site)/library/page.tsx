@@ -2,6 +2,22 @@ import { createClient } from "@/lib/supabase/server";
 import { GameGrid }     from "@/components/GameGrid";
 import type { GameSummary } from "@/lib/types";
 
+interface LibraryRow {
+  game_id:       number;
+  playtime_mins: number;
+  games: {
+    slug:           string;
+    title:          string;
+    studio:         string | null;
+    genre:          string | null;
+    steam_positive: number | null;
+    steam_negative: number | null;
+    price_usd:      number | null;
+    is_free:        boolean;
+    header_image:   string | null;
+  } | null;
+}
+
 export default async function LibraryPage() {
   const sb = await createClient();
   const { data: { user } } = await sb.auth.getUser();
@@ -22,31 +38,31 @@ export default async function LibraryPage() {
 
   const { data: lib } = await sb
     .from("user_library")
-    .select("game_id, playtime_mins, games(*)")
+    .select("game_id, playtime_mins, games(slug, title, studio, genre, steam_positive, steam_negative, price_usd, is_free, header_image)")
     .eq("user_id", user.id)
     .order("playtime_mins", { ascending: false });
 
   const ownedIds = new Set<number>();
   const games: GameSummary[] = [];
 
-  lib?.forEach((l) => {
-    const g = l.games as Record<string, unknown> | null;
+  (lib as LibraryRow[] | null)?.forEach((l) => {
+    const g = l.games;
     if (!g) return;
     ownedIds.add(l.game_id);
-    const pos = (g.steam_positive as number) ?? 0;
-    const neg = (g.steam_negative as number) ?? 0;
+    const pos = g.steam_positive ?? 0;
+    const neg = g.steam_negative ?? 0;
     games.push({
-      id:           l.game_id,
-      slug:         g.slug as string,
-      title:        g.title as string,
-      studio:       g.studio as string | null,
-      genre:        g.genre as string | null,
-      steam_pct:    pos + neg > 0 ? Math.round((pos / (pos + neg)) * 100) : null,
-      price_usd:    g.price_usd as number | null,
-      is_free:      (g.is_free as boolean) ?? false,
-      header_image: g.header_image as string | null,
-      tags:         [],
-      owned:        true,
+      id:            l.game_id,
+      slug:          g.slug,
+      title:         g.title,
+      studio:        g.studio,
+      genre:         g.genre,
+      steam_pct:     pos + neg > 0 ? Math.round((pos / (pos + neg)) * 100) : null,
+      price_usd:     g.price_usd,
+      is_free:       g.is_free ?? false,
+      header_image:  g.header_image,
+      tags:          [],
+      owned:         true,
       playtime_mins: l.playtime_mins,
     });
   });
