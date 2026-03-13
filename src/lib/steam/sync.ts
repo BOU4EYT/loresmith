@@ -1,9 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
 
-const sb = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+// Lazy — not evaluated at module load time so build doesn't need the vars
+function getClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 export async function syncGameDetails(appId: number) {
   const res  = await fetch(`https://store.steampowered.com/api/appdetails?appids=${appId}&cc=us&l=en`)
@@ -13,7 +16,7 @@ export async function syncGameDetails(appId: number) {
 
   const slug = d.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + appId
 
-  await sb.from('games').upsert({
+  await getClient().from('games').upsert({
     id: appId, slug, title: d.name,
     studio: d.developers?.[0] ?? null,
     publisher: d.publishers?.[0] ?? null,
@@ -33,7 +36,7 @@ export async function syncReviews(appId: number) {
   const json = await res.json()
   const s    = json?.query_summary
   if (!s) return
-  await sb.from('games').update({
+  await getClient().from('games').update({
     steam_positive: s.total_positive ?? 0,
     steam_negative: s.total_negative ?? 0,
     updated_at: new Date().toISOString(),
@@ -46,10 +49,10 @@ export async function syncSteamSpyTags(appId: number) {
   const tags: Record<string, number> = data?.tags ?? {}
 
   for (const [label, votes] of Object.entries(tags)) {
-    const { data: tag } = await sb.from('steam_tags')
+    const { data: tag } = await getClient().from('steam_tags')
       .upsert({ label }, { onConflict: 'label' })
       .select('id').single()
-    if (tag) await sb.from('game_steam_tags').upsert({
+    if (tag) await getClient().from('game_steam_tags').upsert({
       game_id: appId, tag_id: tag.id, vote_count: votes,
     }, { onConflict: 'game_id,tag_id' })
   }

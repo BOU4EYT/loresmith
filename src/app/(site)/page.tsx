@@ -45,6 +45,12 @@ export default async function DiscoverPage({
     games = (data as GameSummary[]) ?? [];
   }
 
+  // ── Sanitise NaN steam_pct values from DB (PostgreSQL IEEE 754 NaN) ───
+  games = games.map((g) => ({
+    ...g,
+    steam_pct: g.steam_pct !== null && !Number.isNaN(g.steam_pct) ? g.steam_pct : null,
+  }));
+
   // ── Client-side sort (after fetch) ────────────────────────────────────
   if (params.sort === "score") {
     games = [...games].sort((a, b) => {
