@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS sync_log (
 -- 4. Fix discover_games RPC
 --    Old version had unguarded division → NaN when counts are 0
 -- ============================================================
+DROP FUNCTION IF EXISTS discover_games(text[],uuid,integer);
 CREATE OR REPLACE FUNCTION discover_games(
   mechanic_slugs text[]  DEFAULT NULL,
   exclude_owned  uuid    DEFAULT NULL,
@@ -133,6 +134,7 @@ $$;
 -- 5. Fix search_games RPC
 --    Full-text search across title, studio, tags
 -- ============================================================
+DROP FUNCTION IF EXISTS search_games(text,integer);
 CREATE OR REPLACE FUNCTION search_games(
   query text,
   lim   int DEFAULT 48
